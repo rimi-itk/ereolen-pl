@@ -1,0 +1,12 @@
+{
+    "branches": {
+        "dirs": [
+            // A list of absolute directories.
+        ]
+    },
+    "client": {
+        "config": {
+            // Optional options for GuzzleHttp\Client (cf. http://docs.guzzlephp.org/en/6.5/request-options.html).
+        }
+    }
+}

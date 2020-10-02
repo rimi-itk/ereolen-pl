@@ -1,0 +1,31 @@
+{
+    "type": "project",
+    "license": "proprietary",
+    "require": {
+        "php": "~7.0.0",
+        "guzzlehttp/guzzle": "^6.5",
+        "twig/twig": "^2.12"
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^2.16",
+        "friendsoftwig/twigcs": "^3.2"
+    },
+    "scripts": {
+        "coding-standards-check/php-cs-fixer": [
+            "php-cs-fixer --config=.php_cs.dist fix --dry-run"
+        ],
+        "coding-standards-check/twigcs": [
+            "twigcs lint templates"
+        ],
+        "coding-standards-check": [
+            "@coding-standards-check/php-cs-fixer",
+            "@coding-standards-check/twigcs"
+        ],
+        "coding-standards-apply/php-cs-fixer": [
+            "php-cs-fixer --config=.php_cs.dist fix"
+        ],
+        "coding-standards-apply": [
+            "@coding-standards-apply/php-cs-fixer"
+        ]
+    }
+}

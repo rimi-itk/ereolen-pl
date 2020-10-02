@@ -1,0 +1,29 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'Branches'|trans }}{% endblock %}
+
+{% macro item_row(item) %}
+	<dt class="col-sm-3">{{ item.label }}</dt>
+	<dd class="col-sm-9">
+		{% if item.url %}
+			<a href="{{ item.url }}">{{ item.value }}</a>
+		{% else %}
+			{{ item.value }}
+		{% endif %}
+	</dd>
+{% endmacro %}
+
+{% block content %}
+	<h1>{{ block('title') }}</h1>
+
+	{% for item in data %}
+		<article class="branch">
+			<dl class="row">
+				{{ _self.item_row({ label: 'Directory'|trans, value: item.dir }) }}
+				{{ _self.item_row({ label: 'Repository'|trans, value: item.repo, url: item.repo }) }}
+				{{ _self.item_row({ label: 'Branch'|trans, value: item.branch, url: item.repo~'/tree/'~item.branch }) }}
+			</dl>
+		</article>
+	{% endfor %}
+
+{% endblock %}

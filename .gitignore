@@ -1,0 +1,4 @@
+vendor/
+var/
+config.json
+.php_cs.cache
