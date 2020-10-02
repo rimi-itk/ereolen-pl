@@ -36,6 +36,12 @@
               </li>
             {% endfor %}
           </ul>
+          {% if data.meta.updated_at is defined %}
+            <div class=".navbar-text ">
+              {{ 'Updated %updated_at%'|trans({'%updated_at%': data.meta.updated_at|date}) }}
+              <a class="btn btn-danger btn-sm" href="{{ path('flush', {redirect: current_url()}) }}">{{ 'Refresh' }}</a>
+            </div>
+          {% endif %}
         </div>
       </nav>
     {% endblock %}
@@ -43,14 +49,10 @@
     {% block body %}
       <div class="container-fluid">
         {% block content %}{% endblock %}
-      </div>
-    {% endblock %}
 
-    {% block metadata %}
-      {% if data.meta.updated_at is defined %}
-        Updated at {{ data.meta.updated_at|date }}
-        <a class="btn btn-danger" href="{{ path('flush', {redirect: current_url()}) }}">{{ 'Flush cache' }}</a>
-      {% endif %}
+        {% block metadata %}
+        {% endblock %}
+      </div>
     {% endblock %}
 
     <!-- Optional JavaScript -->

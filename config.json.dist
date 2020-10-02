@@ -1,4 +1,9 @@
 {
+    "pulls": {
+        "repos": [
+            // A list of GitHub repositories.
+        ]
+    },
     "branches": {
         "dirs": [
             // A list of absolute directories.

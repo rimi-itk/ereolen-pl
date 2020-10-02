@@ -8,24 +8,50 @@
   {% for repo, pulls in data.data %}
     <section>
       <header>
-        <h1>{{ repo }}</h1>
+        <h2>{{ repo }}</h2>
       </header>
 
       {% for pull in pulls.data %}
-        <pre>{{ pull.number }}</pre>
-        <pre>{{ pull.html_url }}</pre>
-        <pre>{{ pull.title }}</pre>
-        <pre>{{ pull.draft ? 'draft' : '' }}</pre>
-        <pre>{{ pull.state }}</pre>
-        <pre>{{ pull.user.login }}</pre>
-        <pre>{{ pull.body }}</pre>
-        <pre>{{ pull.created_at }}</pre>
-        <pre>{{ pull.updated_at }}</pre>
-        {% for reviewer in pull.requested_reviewers %}
-          <pre>{{ reviewer }}</pre>
-        {% endfor %}
-        <pre>{{ pull.closed_at }}</pre>
-        <pre>{{ pull|json_encode(constant('JSON_PRETTY_PRINT') b-or constant('JSON_UNESCAPED_SLASHES') b-or constant('JSON_UNESCAPED_UNICODE')) }}</pre>
+        <article class="card">
+          <div class="card-body">
+            <div class="title">
+              <a href="{{ pull.html_url }}">{{ pull.title }}</a>
+              {% if pull.draft %} <span class="badge badge-secondary">{{ 'draft'|trans }}</span> {% endif %}
+              <div class="badge badge-primary">{{ pull.state }}</div>
+            </div>
+            <pre>{{ pull.body }}</pre>
+            {#<pre>{{ pull.closed_at }}</pre>#}
+
+            <div class="created-by">
+              Created by {{ pull.user.login }}
+              <span class="created-at">{{ pull.created_at|date }}</span>
+              {% if pull.updated_at != pull.created_at %} (updated {{ pull.updated_at|date }}){% endif %}
+            </div>
+
+
+            {% for label in pull.labels %}
+              <div class="badge" style="background-color: #{{ label.color }}; color: #fff">{{ label.name }}</div>
+            {% endfor %}
+
+            {% for reviewer in pull.requested_reviewers %}
+              <pre>{{ reviewer }}</pre>
+            {% endfor %}
+
+            <div class="details">
+              {% set id = 'pull-details-' ~ pull.id %}
+              <button class="btn btn-secondary btn-sm" type="button" data-toggle="collapse" data-target="#{{ id }}" aria-expanded="false" aria-controls="{{ id }}">
+                {{ 'Details'|trans }}
+              </button>
+              <div class="collapse" id="{{ id }}">
+                <div class="card card-body">
+                  <pre>{{ pull|json_encode(constant('JSON_PRETTY_PRINT') b-or constant('JSON_UNESCAPED_SLASHES') b-or constant('JSON_UNESCAPED_UNICODE')) }}</pre>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+      {% else %}
+        <div class="alert alert-info">{{ 'No pulls'|trans }}</div>
       {% endfor %}
     </section>
   {% endfor %}

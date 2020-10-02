@@ -41,23 +41,23 @@ class Handler
 
     private function pulls()
     {
-        $repos = [
-          'base',
-          'ereolen',
-          'ereolengo',
-        ];
         $data = [];
+
+        $repos = $this->config['pulls']['repos'] ?? null;
+
         $updatedAt = null;
-        foreach ($repos as $repo) {
-            $path = 'repos/eReolen/'.$repo.'/pulls';
-            $repoData = $this->get($path);
-            if (isset($repoData['meta']['updated_at']) && $repoData['meta']['updated_at'] > $updatedAt) {
-                $updatedAt = $repoData['meta']['updated_at'];
+        if (is_array($repos)) {
+            foreach ($repos as $repo) {
+                $path = 'repos/' . $repo . '/pulls';
+                $repoData = $this->get($path);
+                if (isset($repoData['meta']['updated_at']) && $repoData['meta']['updated_at'] > $updatedAt) {
+                    $updatedAt = $repoData['meta']['updated_at'];
+                }
+                $data['data'][$repo] = $repoData;
             }
-            $data['data'][$repo] = $repoData;
-        }
-        if ($updatedAt) {
-            $data['meta']['updated_at'] = $updatedAt;
+            if ($updatedAt) {
+                $data['meta']['updated_at'] = $updatedAt;
+            }
         }
 
         return $this->render('pulls.html.twig', ['data' => $data]);
@@ -124,9 +124,10 @@ class Handler
     {
         $loader = new FilesystemLoader(__DIR__.'/templates');
         $twig = new Environment($loader, ['debug' => true]);
+        $twig->getExtension(Twig\Extension\CoreExtension::class)->setDateFormat('Y-m-d H:i:s', '%d days');
         $twig->addExtension(new DebugExtension());
         $twig->addFilter(new Twig\TwigFilter('trans', function (string $text, array $parameters = []) {
-            return $text;
+            return str_replace(array_keys($parameters), array_values($parameters), $text);
         }));
         $twig->addFunction(new Twig\TwigFunction('path', function (string $path, array $parameters = []) {
             $requestPath = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
@@ -187,7 +188,7 @@ class Handler
                 'base_uri' => 'https://api.github.com',
             ];
             if (isset($this->config['client']['config'])) {
-                $config = array_merge((array) $this->config['client']['config']);
+                $config = array_merge($config, (array) $this->config['client']['config']);
             }
             $this->client = new Client($config);
         }
