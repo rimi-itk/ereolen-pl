@@ -3,30 +3,30 @@
 {% block title %}{{ 'Pulls'|trans }}{% endblock %}
 
 {% block content %}
-	<h1>{{ block('title') }}</h1>
+  <h1>{{ block('title') }}</h1>
 
-	{% for repo, pulls in data.data %}
-		<section>
-			<header>
-				<h1>{{ repo }}</h1>
-			</header>
+  {% for repo, pulls in data.data %}
+    <section>
+      <header>
+        <h1>{{ repo }}</h1>
+      </header>
 
-			{% for pull in pulls.data %}
-				<pre>{{ pull.number }}</pre>
-				<pre>{{ pull.html_url }}</pre>
-				<pre>{{ pull.title }}</pre>
-				<pre>{{ pull.draft ? 'draft' : '' }}</pre>
-				<pre>{{ pull.state }}</pre>
-				<pre>{{ pull.user.login }}</pre>
-				<pre>{{ pull.body }}</pre>
-				<pre>{{ pull.created_at }}</pre>
-				<pre>{{ pull.updated_at }}</pre>
-				{% for reviewer in pull.requested_reviewers %}
-					<pre>{{ reviewer }}</pre>
-				{% endfor %}
-				<pre>{{ pull.closed_at }}</pre>
-				<pre>{{ pull|json_encode(constant('JSON_PRETTY_PRINT') b-or constant('JSON_UNESCAPED_SLASHES') b-or constant('JSON_UNESCAPED_UNICODE')) }}</pre>
-			{% endfor %}
-		</section>
-	{% endfor %}
+      {% for pull in pulls.data %}
+        <pre>{{ pull.number }}</pre>
+        <pre>{{ pull.html_url }}</pre>
+        <pre>{{ pull.title }}</pre>
+        <pre>{{ pull.draft ? 'draft' : '' }}</pre>
+        <pre>{{ pull.state }}</pre>
+        <pre>{{ pull.user.login }}</pre>
+        <pre>{{ pull.body }}</pre>
+        <pre>{{ pull.created_at }}</pre>
+        <pre>{{ pull.updated_at }}</pre>
+        {% for reviewer in pull.requested_reviewers %}
+          <pre>{{ reviewer }}</pre>
+        {% endfor %}
+        <pre>{{ pull.closed_at }}</pre>
+        <pre>{{ pull|json_encode(constant('JSON_PRETTY_PRINT') b-or constant('JSON_UNESCAPED_SLASHES') b-or constant('JSON_UNESCAPED_UNICODE')) }}</pre>
+      {% endfor %}
+    </section>
+  {% endfor %}
 {% endblock %}

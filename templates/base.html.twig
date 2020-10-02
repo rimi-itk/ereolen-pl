@@ -11,47 +11,47 @@
     <title>{% block title %}eReolen{% endblock %}</title>
   </head>
   <body>
-		{% block navbar %}
-			<nav class="navbar navbar-expand-lg navbar-light bg-light">
-				<a class="navbar-brand" href="{{ path('') }}">eReolen</a>
-				<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-					<span class="navbar-toggler-icon"></span>
-				</button>
+    {% block navbar %}
+      <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="{{ path('') }}">eReolen</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
 
-				<div class="collapse navbar-collapse" id="navbarSupportedContent">
-					<ul class="navbar-nav mr-auto">
-						{% for item in [
-							{
-								path: path('pulls'),
-								title: 'Pulls'|trans
-							},
-							{
-								path: path('branches'),
-								title: 'Branches'|trans
-							}
-						] %}
-							{% set is_active = is_current_path(item.path) %}
-							<li class="nav-item {{ is_active ? 'active' }}">
-								<a class="nav-link" href="{{ item.path }}">{{ item.title }}{% if is_active %} <span class="sr-only">(current)</span>{% endif %}</a>
-							</li>
-						{% endfor %}
-					</ul>
-				</div>
-			</nav>
-		{% endblock %}
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav mr-auto">
+            {% for item in [
+              {
+                path: path('pulls'),
+                title: 'Pulls'|trans
+              },
+              {
+                path: path('branches'),
+                title: 'Branches'|trans
+              }
+            ] %}
+              {% set is_active = is_current_path(item.path) %}
+              <li class="nav-item {{ is_active ? 'active' }}">
+                <a class="nav-link" href="{{ item.path }}">{{ item.title }}{% if is_active %} <span class="sr-only">(current)</span>{% endif %}</a>
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+      </nav>
+    {% endblock %}
 
-		{% block body %}
-			<div class="container-fluid">
-				{% block content %}{% endblock %}
-			</div>
-		{% endblock %}
+    {% block body %}
+      <div class="container-fluid">
+        {% block content %}{% endblock %}
+      </div>
+    {% endblock %}
 
-		{% block metadata %}
-			{% if data.meta.updated_at is defined %}
-				Updated at {{ data.meta.updated_at|date }}
-				<a class="btn btn-danger" href="{{ path('flush', {redirect: current_url()}) }}">{{ 'Flush cache' }}</a>
-			{% endif %}
-		{% endblock %}
+    {% block metadata %}
+      {% if data.meta.updated_at is defined %}
+        Updated at {{ data.meta.updated_at|date }}
+        <a class="btn btn-danger" href="{{ path('flush', {redirect: current_url()}) }}">{{ 'Flush cache' }}</a>
+      {% endif %}
+    {% endblock %}
 
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
