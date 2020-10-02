@@ -75,6 +75,7 @@ class Handler
                 $output = null;
                 exec($command, $output);
                 $remote = reset($output);
+                $remote = preg_replace('/\.git$/', '', $remote);
 
                 $command = "git -C $dir rev-parse --abbrev-ref HEAD";
                 $output = null;
