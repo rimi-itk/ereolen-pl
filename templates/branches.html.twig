@@ -14,15 +14,17 @@
 {% endmacro %}
 
 {% block content %}
-  <h1>{{ block('title') }}</h1>
+  {#<h1>{{ block('title') }}</h1>#}
 
   {% for item in data %}
-    <article class="branch">
-      <dl class="row">
-        {{ _self.item_row({ label: 'Directory'|trans, value: item.dir }) }}
-        {{ _self.item_row({ label: 'Repository'|trans, value: item.repo, url: item.repo }) }}
-        {{ _self.item_row({ label: 'Branch'|trans, value: item.branch, url: item.repo ~ '/tree/' ~ item.branch }) }}
-      </dl>
+    <article class="card my-2 branch">
+      <div class="card-body">
+        <dl class="row my-0">
+          {{ _self.item_row({ label: 'Directory'|trans, value: item.dir }) }}
+          {{ _self.item_row({ label: 'Repository'|trans, value: item.repo, url: item.repo }) }}
+          {{ _self.item_row({ label: 'Branch'|trans, value: item.branch, url: item.repo ~ '/tree/' ~ item.branch }) }}
+        </dl>
+      </div>
     </article>
   {% endfor %}
 {% endblock %}

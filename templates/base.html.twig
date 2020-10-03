@@ -8,12 +8,12 @@
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
 
-    <title>{% block title %}eReolen{% endblock %}</title>
+    <title>{% block title %}{{ config.site_name }}{% endblock %}</title>
   </head>
   <body>
     {% block navbar %}
       <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <a class="navbar-brand" href="{{ path('') }}">eReolen</a>
+        <a class="navbar-brand" href="{{ path('') }}">{{ config.site_name }}</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
@@ -37,8 +37,10 @@
             {% endfor %}
           </ul>
           {% if data.meta.updated_at is defined %}
-            <div class=".navbar-text ">
-              {{ 'Updated %updated_at%'|trans({'%updated_at%': data.meta.updated_at|date}) }}
+            <div class=".navbar-text">
+              <small class="text-muted">
+                {{ 'Updated %updated_at%'|trans({'%updated_at%': data.meta.updated_at|date('d/m/Y H:i')}) }}
+              </small>
               <a class="btn btn-danger btn-sm" href="{{ path('flush', {redirect: current_url()}) }}">{{ 'Refresh' }}</a>
             </div>
           {% endif %}
@@ -47,7 +49,7 @@
     {% endblock %}
 
     {% block body %}
-      <div class="container-fluid">
+      <div class="container-fluid my-4">
         {% block content %}{% endblock %}
 
         {% block metadata %}

@@ -1,4 +1,5 @@
 {
+    "site_name": "Site name",
     "pulls": {
         "repos": [
             // A list of GitHub repositories.

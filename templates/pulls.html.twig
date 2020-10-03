@@ -2,57 +2,127 @@
 
 {% block title %}{{ 'Pulls'|trans }}{% endblock %}
 
+{% macro wrap_span(value, class) %}
+  <span class="{{ class }}">{{ value }}</span>
+{% endmacro %}
+
+{% macro branch_url(branch) %}
+  {% spaceless %}
+    <a href="{{ branch.repo.html_url ~ '/tree/' ~ branch.ref }}">{{ branch.ref }}</a>
+  {% endspaceless %}
+{% endmacro %}
+
+{% macro avatar(user) %}
+  <img width="20" height="20" class="rounded-circle" src="{{ user.avatar_url }}" title="{{ user.login }}"/>
+{% endmacro %}
+
+{% macro user(user) %}
+  <span class="user">
+    {{ _self.avatar(user) }}
+    {{ user.login }}
+  </span>
+{% endmacro %}
+
 {% block content %}
-  <h1>{{ block('title') }}</h1>
+  {#<h1>{{ block('title') }}</h1>#}
 
-  {% for repo, pulls in data.data %}
-    <section>
-      <header>
-        <h2>{{ repo }}</h2>
-      </header>
+  <ul class="nav nav-tabs" id="repo" role="tablist">
+    {% for repo_name, pulls in data.data %}
+      {% set id = repo_name|replace({'/': '--'}) %}
+      <li class="nav-item" role="presentation">
+        <a class="nav-link {{ loop.first ? 'active' }}" id="{{ id }}-tab" data-toggle="tab" href="#{{ id }}" role="tab" aria-controls="{{ id }}" aria-selected="true">{{ repo_name }}</a>
+      </li>
+    {% endfor %}
+  </ul>
 
-      {% for pull in pulls.data %}
-        <article class="card">
-          <div class="card-body">
-            <div class="title">
-              <a href="{{ pull.html_url }}">{{ pull.title }}</a>
-              {% if pull.draft %} <span class="badge badge-secondary">{{ 'draft'|trans }}</span> {% endif %}
-              <div class="badge badge-primary">{{ pull.state }}</div>
-            </div>
-            <pre>{{ pull.body }}</pre>
-            {#<pre>{{ pull.closed_at }}</pre>#}
+  <div class="tab-content" id="repoContent">
+    {% for repo_name, pulls in data.data %}
+      {% set id = repo_name|replace({'/': '--'}) %}
+      <section class="tab-pane fade {{ loop.first ? 'show active' }}" id="{{ id }}" role="tabpanel" aria-labelledby="{{ id }}-tab">
+        <header class="my-4">
+          {% set repo = pulls.data[0].head.repo|default(false) %}
+          <h2>
+            {% if repo %}
+              {{ repo.full_name }}
+              {% if repo.description %}
+                <small class="text-muted">{{ repo.description }}</small>
+              {% endif %}
+            {% else %}
+              {{ repo_name }}
+            {% endif %}
+          </h2>
 
-            <div class="created-by">
-              Created by {{ pull.user.login }}
-              <span class="created-at">{{ pull.created_at|date }}</span>
-              {% if pull.updated_at != pull.created_at %} (updated {{ pull.updated_at|date }}){% endif %}
-            </div>
+          <p><a href="{{ repo.html_url }}">{{ repo.html_url }}</a></p>
 
+          {% if pulls.data %}
+            <p>{{ '#pulls: %number_of_pull%'|trans({'%number_of_pull%': pulls.data|length}) }}</p>
+          {% endif %}
+        </header>
 
-            {% for label in pull.labels %}
-              <div class="badge" style="background-color: #{{ label.color }}; color: #fff">{{ label.name }}</div>
-            {% endfor %}
+        {% if pulls.data %}
+          {% for pull in pulls.data %}
+          <article class="x-card pull my-4">
+            <div class="x-card-body">
+              <h3 class="title">
+                <a class="text-muted" href="{{ pull.html_url }}">#{{ pull.number }}</a> {{ pull.title }}
 
-            {% for reviewer in pull.requested_reviewers %}
-              <pre>{{ reviewer }}</pre>
-            {% endfor %}
+                <span class="badge badge-primary">{{ pull.state }}</span>
+                {% if pull.draft %} <span class="badge badge-secondary">{{ 'draft'|trans }}</span> {% endif %}
+                {% for label in pull.labels %}
+                  <span class="badge" style="background-color: #{{ label.color }}; color: #fff">{{ label.name }}</span>
+                {% endfor %}
+              </h3>
 
-            <div class="details">
-              {% set id = 'pull-details-' ~ pull.id %}
-              <button class="btn btn-secondary btn-sm" type="button" data-toggle="collapse" data-target="#{{ id }}" aria-expanded="false" aria-controls="{{ id }}">
-                {{ 'Details'|trans }}
-              </button>
-              <div class="collapse" id="{{ id }}">
-                <div class="card card-body">
-                  <pre>{{ pull|json_encode(constant('JSON_PRETTY_PRINT') b-or constant('JSON_UNESCAPED_SLASHES') b-or constant('JSON_UNESCAPED_UNICODE')) }}</pre>
+              <div class="card">
+                <div class="card-header">
+                  {{ 'Opened on %opened_on%'|trans({'%opened_on%': pull.created_at|date('d/m/Y') }) }};
+                  {{ _self.user(pull.user) }} wants to merge {{ _self.branch_url(pull.head) }} into {{ _self.branch_url(pull.base) }}.
+
+                  {#{% if pull.updated_at != pull.created_at %} (updated {{ pull.updated_at|date }}){% endif %}#}
+                </div>
+                <div class="card-body">
+                  <dl>
+                    {% if pull.body %}
+                      <dt>{{ 'Description'|trans }}</dt>
+                      <dd>
+                        <div class="body">{{ pull.body|markdown_to_html }}</div>
+                      </dd>
+                    {% endif %}
+
+                    {% if pull.requested_reviewers %}
+                      <dt>{{ 'Reviewers'|trans }}</dt>
+                      <dd>
+                        {% for reviewer in pull.requested_reviewers %}
+                          <span class="reviewer mr-2">{{ _self.user(reviewer) }}</span>
+                        {% endfor %}
+                      </dd>
+                    {% endif %}
+                  </dl>
+
+                  {% if app.query.debug %}
+                    <div class="api-data">
+                      {% set id = 'pull-details-' ~ pull.id %}
+                      <button class="btn btn-secondary btn-sm" type="button" data-toggle="collapse" data-target="#{{ id }}" aria-expanded="false" aria-controls="{{ id }}">
+                        {{ 'API data'|trans }}
+                      </button>
+                      <div class="collapse" id="{{ id }}">
+                        <div class="card card-body">
+                          <pre>{{ pull|json_encode(constant('JSON_PRETTY_PRINT') b-or constant('JSON_UNESCAPED_SLASHES') b-or constant('JSON_UNESCAPED_UNICODE')) }}</pre>
+                        </div>
+                      </div>
+                    </div>
+                  {% endif %}
+
                 </div>
               </div>
             </div>
-          </div>
-        </article>
+          </article>
+        {% endfor %}
       {% else %}
-        <div class="alert alert-info">{{ 'No pulls'|trans }}</div>
-      {% endfor %}
-    </section>
-  {% endfor %}
+          <div class="alert alert-info">{{ 'No pulls'|trans }}</div>
+        {% endif %}
+      </section>
+    {% endfor %}
+  </div>
+
 {% endblock %}

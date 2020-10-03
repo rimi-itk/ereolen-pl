@@ -3,6 +3,7 @@
 require __DIR__.'/vendor/autoload.php';
 
 use GuzzleHttp\Client;
+use Symfony\Component\OptionsResolver\OptionsResolver;
 use Twig\Environment;
 use Twig\Extension\DebugExtension;
 use Twig\Loader\FilesystemLoader;
@@ -12,7 +13,7 @@ class Handler
     /**
      * @var array
      */
-    private $config;
+    private $options;
 
     public function __construct()
     {
@@ -20,7 +21,27 @@ class Handler
         if (!file_exists($configFilename)) {
             throw new RuntimeException(sprintf('Config file %s not found', $configFilename));
         }
-        $this->config = json_decode(file_get_contents($configFilename), true);
+        $options = json_decode(file_get_contents($configFilename), true);
+
+        $resolver = new OptionsResolver();
+        $this->configureOptions($resolver);
+        $this->options = $resolver->resolve($options);
+
+        date_default_timezone_set($this->options['time_zone']);
+    }
+
+    private function configureOptions(OptionsResolver $resolver)
+    {
+        $resolver
+            ->setRequired([
+                'site_name',
+                'branches',
+                'pulls',
+            ])
+            ->setDefaults([
+                'client' => [],
+                'time_zone' => 'Europe/Copenhagen',
+            ]);
     }
 
     public function handle(array $request)
@@ -43,12 +64,12 @@ class Handler
     {
         $data = [];
 
-        $repos = $this->config['pulls']['repos'] ?? null;
+        $repos = $this->options['pulls']['repos'] ?? null;
 
         $updatedAt = null;
         if (is_array($repos)) {
             foreach ($repos as $repo) {
-                $path = 'repos/' . $repo . '/pulls';
+                $path = 'repos/'.$repo.'/pulls';
                 $repoData = $this->get($path);
                 if (isset($repoData['meta']['updated_at']) && $repoData['meta']['updated_at'] > $updatedAt) {
                     $updatedAt = $repoData['meta']['updated_at'];
@@ -67,7 +88,7 @@ class Handler
     {
         $data = [];
 
-        $dirs = $this->config['branches']['dirs'] ?? null;
+        $dirs = $this->options['branches']['dirs'] ?? null;
 
         if (is_array($dirs)) {
             foreach ($dirs as $dir) {
@@ -128,7 +149,16 @@ class Handler
         $twig->addExtension(new DebugExtension());
         $twig->addFilter(new Twig\TwigFilter('trans', function (string $text, array $parameters = []) {
             return str_replace(array_keys($parameters), array_values($parameters), $text);
-        }));
+        }, [
+            'is_safe' => ['html'],
+        ]));
+        $twig->addFilter(new Twig\TwigFilter('markdown_to_html', function (string $text, array $parameters = []) {
+            $parser = new \cebe\markdown\GithubMarkdown();
+
+            return $parser->parse($text);
+        }, [
+            'is_safe' => ['html'],
+        ]));
         $twig->addFunction(new Twig\TwigFunction('path', function (string $path, array $parameters = []) {
             $requestPath = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
             if (!empty($path)) {
@@ -141,9 +171,16 @@ class Handler
             return $_SERVER['REQUEST_URI'];
         }));
         $twig->addFunction(new Twig\TwigFunction('is_current_path', function (string $path) {
-            // @TODO: Make this actually work.
-            return false;
+            $queryString = parse_url($path, PHP_URL_QUERY);
+            parse_str($queryString, $query);
+
+            return ($query['path'] ?? null) === ($_GET['path'] ?? null);
         }));
+
+        $context += [
+            'app' => ['query' => $_GET],
+            'config' => $this->options,
+        ];
 
         return $twig->render($templateName, $context);
     }
@@ -187,8 +224,8 @@ class Handler
             $config = [
                 'base_uri' => 'https://api.github.com',
             ];
-            if (isset($this->config['client']['config'])) {
-                $config = array_merge($config, (array) $this->config['client']['config']);
+            if (isset($this->options['client']['config'])) {
+                $config = array_merge($config, (array) $this->options['client']['config']);
             }
             $this->client = new Client($config);
         }
