@@ -30,7 +30,10 @@
     {% for repo_name, pulls in data.data %}
       {% set id = repo_name|replace({'/': '--'}) %}
       <li class="nav-item" role="presentation">
-        <a class="nav-link {{ loop.first ? 'active' }}" id="{{ id }}-tab" data-toggle="tab" href="#{{ id }}" role="tab" aria-controls="{{ id }}" aria-selected="true">{{ repo_name }}</a>
+        <a class="nav-link {{ loop.first ? 'active' }}" id="{{ id }}-tab" data-toggle="tab" href="#{{ id }}" role="tab" aria-controls="{{ id }}" aria-selected="true">
+          {{ repo_name }}
+          <span class="badge badge-pill badge-info">{{ pulls.data|default([])|length }}</span>
+        </a>
       </li>
     {% endfor %}
   </ul>
@@ -52,11 +55,16 @@
             {% endif %}
           </h2>
 
-          <p><a href="{{ repo.html_url }}">{{ repo.html_url }}</a></p>
+          {% set repo_html_url = repo.html_url|default('https://github.com/' ~ repo_name) %}
+          {% if repo_html_url %}
+            <p><a href="{{ repo_html_url }}">{{ repo_html_url }}</a></p>
+          {% endif %}
 
+          {#
           {% if pulls.data %}
             <p>{{ '#pulls: %number_of_pull%'|trans({'%number_of_pull%': pulls.data|length}) }}</p>
           {% endif %}
+          #}
         </header>
 
         {% if pulls.data %}
@@ -119,7 +127,7 @@
           </article>
         {% endfor %}
       {% else %}
-          <div class="alert alert-info">{{ 'No pulls'|trans }}</div>
+          <div class="alert alert-info">{{ 'No pull requests'|trans }}</div>
         {% endif %}
       </section>
     {% endfor %}
