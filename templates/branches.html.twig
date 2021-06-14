@@ -2,7 +2,7 @@
 
 {% block title %}{{ 'Branches'|trans }}{% endblock %}
 
-{% macro item_row(item) %}
+{% macro item_row(item, stuff = null) %}
   <dt class="col-sm-3">{{ item.label }}</dt>
   <dd class="col-sm-9">
     {% if item.url %}
@@ -10,11 +10,22 @@
     {% else %}
       {{ item.value }}
     {% endif %}
+    {{ stuff ? stuff|raw }}
   </dd>
+{% endmacro %}
+
+{% macro git_compare(name, item) %}
+  {% set value = item['commit' == name ? 'commit' : 'branch']  %}
+  <input type="checkbox" name="git-compare-{{ name }}" value="{{ value }}" data-repo="{{ item.repo }}"/>
 {% endmacro %}
 
 {% block content %}
   {#<h1>{{ block('title') }}</h1>#}
+
+  <button class="btn btn-primary" name="git-compare-branch-go" disabled type="button">Compare branches</button>
+  <button class="btn btn-primary" name="git-compare-commit-go" disabled type="button">Compare commits</button>
+
+  {# https://github.com/eReolen/base/compare/feature/ER-515-mobile-menu...feature/SUPP0RT-151 #}
 
   {% for item in data %}
     <article class="card my-2 branch">
@@ -22,9 +33,23 @@
         <dl class="row my-0">
           {{ _self.item_row({ label: 'Directory'|trans, value: item.dir }) }}
           {{ _self.item_row({ label: 'Repository'|trans, value: item.repo, url: item.repo }) }}
-          {{ _self.item_row({ label: 'Branch'|trans, value: item.branch, url: item.repo ~ '/tree/' ~ item.branch }) }}
+          {{ _self.item_row({ label: 'Branch'|trans, value: item.branch, url: item.repo ~ '/tree/' ~ item.branch }, _self.git_compare('branch', item) ) }}
+          {{ _self.item_row({ label: 'Commit'|trans, value: item.commit, url: item.repo ~ '/commit/' ~ item.commit }, _self.git_compare('commit', item) ) }}
         </dl>
       </div>
     </article>
   {% endfor %}
+{% endblock %}
+
+{% block javascript %}
+  {{ parent() }}
+  <script>(function ($) {
+      $('[name="git-compare-branch"]').on('change', function() {
+        $('[name="git-compare-branch-go"]').prop('disabled', 2 !== $('[name="git-compare-branch"]:checked').length)
+      })
+      $('[name="git-compare-commit"]').on('change', function() {
+        $('[name="git-compare-commit-go"]').prop('disabled', 2 !== $('[name="git-compare-commit"]:checked').length)
+      })
+    }(jQuery))
+  </script>
 {% endblock %}

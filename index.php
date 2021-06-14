@@ -92,22 +92,27 @@ class Handler
 
         if (is_array($dirs)) {
             foreach ($dirs as $dir) {
+                $datum = [
+                    'dir' => $dir,
+                ];
+
                 $command = "git -C $dir remote get-url origin";
                 $output = null;
                 exec($command, $output);
                 $remote = reset($output);
-                $remote = preg_replace('/\.git$/', '', $remote);
+                $datum['repo'] = preg_replace('/\.git$/', '', $remote);
 
                 $command = "git -C $dir rev-parse --abbrev-ref HEAD";
                 $output = null;
                 exec($command, $output);
-                $branch = reset($output);
+                $datum['branch'] = reset($output);
 
-                $data[] = [
-                    'dir' => $dir,
-                    'repo' => $remote,
-                    'branch' => $branch,
-                ];
+                $command = "git -C $dir rev-parse HEAD";
+                $output = null;
+                exec($command, $output);
+                $datum['commit'] = reset($output);
+
+                $data[] = $datum;
             }
         }
 
